@@ -63,7 +63,6 @@
 //! ```
 //!
 //! > If you have multiple frames in flight you might want to hold a set of textures to free for each frame and call
-//! `Renderer::free_textures` after waiting for the fence of the previous frame.
 //!
 //! ### Custom textures
 //!
