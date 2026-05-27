@@ -28,14 +28,14 @@ gpu-allocator = ["dep:gpu-allocator"]
 vk-mem = ["dep:vk-mem"]
 
 [dev-dependencies]
-simple_logger = "5.0"
+simple_logger = "5.2.0"
 winit = "0.30"
 ash = { version = "0.38", default-features = false, features = ["debug", "linked", "std"] }
 ash-window = "0.13"
 raw-window-handle = "0.6"
 image = "0.25"
-egui = "0.33"
-egui-winit = "0.33"
-egui_demo_lib = "0.33"
-egui_extras = { version = "0.33", default-features = false, features = ["all_loaders"] }
+egui = "0.34.2"
+egui-winit = "0.34.2"
+egui_demo_lib = "0.34.2"
+egui_extras = { version = "0.34.2", default-features = false, features = [ "all_loaders" ] }
 egui-ash-renderer = { path = ".", features = []}
