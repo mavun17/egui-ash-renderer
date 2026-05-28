@@ -15,7 +15,7 @@ include = ["/src", "LICENSE", "README.md", "CHANGELOG.md"]
 [dependencies]
 thiserror = "2.0"
 log = "0.4.30"
-egui = "0.34.2"
+egui = "0.34.3"
 ash = { version = "0.38.0", default-features = false, features = ["std"] }
 
 gpu-allocator = { path = "../gpu-allocator", default-features = false, features = ["std", "vulkan"], optional = true }
@@ -34,8 +34,8 @@ ash = { version = "0.38.0", default-features = false, features = ["debug", "link
 ash-window = "0.13.0"
 raw-window-handle = "0.6.2"
 image = { version = "0.25.10", default-features = false, features = ["png", "jpeg"] }
-egui = "0.34.2"
-egui-winit = "0.34.2"
-egui_demo_lib = "0.34.2"
-egui_extras = { version = "0.34.2", default-features = false, features = [ "all_loaders" ] }
+egui = "0.34.3"
+egui-winit = "0.34.3"
+egui_demo_lib = "0.34.3"
+egui_extras = { version = "0.34.3", default-features = false, features = [ "all_loaders" ] }
 egui-ash-renderer = { path = ".", features = [] }
