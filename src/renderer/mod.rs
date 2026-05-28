@@ -80,6 +80,7 @@ pub struct DynamicRendering {
 ///
 /// [`cmd_draw`]: #method.cmd_draw
 pub struct Renderer {
+    name: String,
     device: Device,
     allocator: Allocator,
     pipeline: vk::Pipeline,
@@ -152,6 +153,7 @@ impl Renderer {
     /// * [`RendererError`] - If any Vulkan or io error is encountered during initialization.
     #[cfg(feature = "gpu-allocator")]
     pub fn with_gpu_allocator(
+        name: Option<&str>,
         gpu_allocator: Arc<Mutex<GpuAllocator>>,
         device: Device,
         #[cfg(not(feature = "dynamic-rendering"))] render_pass: vk::RenderPass,
@@ -159,6 +161,7 @@ impl Renderer {
         options: Options,
     ) -> RendererResult<Self> {
         Self::from_allocator(
+            name,
             device,
             Allocator::new(gpu_allocator),
             #[cfg(not(feature = "dynamic-rendering"))]
@@ -194,6 +197,7 @@ impl Renderer {
         options: Options,
     ) -> RendererResult<Self> {
         Self::from_allocator(
+            None,
             device,
             Allocator::new(vk_mem_allocator),
             #[cfg(not(feature = "dynamic-rendering"))]
@@ -205,6 +209,7 @@ impl Renderer {
     }
 
     fn from_allocator(
+        name: Option<&str>,
         device: Device,
         allocator: Allocator,
         #[cfg(not(feature = "dynamic-rendering"))] render_pass: vk::RenderPass,
@@ -242,6 +247,7 @@ impl Renderer {
         let textures = HashMap::new();
 
         Ok(Self {
+            name: name.unwrap_or("egui-ash-renderer").to_string(),
             device,
             allocator,
             pipeline,
@@ -352,6 +358,7 @@ impl Renderer {
                     .ok_or(RendererError::BadTexture(*id))?;
 
                 texture.update(
+                    &self.name,
                     &self.device,
                     queue,
                     command_pool,
@@ -369,6 +376,7 @@ impl Renderer {
                 log::trace!("Adding texture {id:?}");
 
                 let texture = Texture::from_rgba8(
+                    &self.name,
                     &self.device,
                     queue,
                     command_pool,
@@ -495,7 +503,7 @@ impl Renderer {
         }
 
         let mesh = self.frames.as_mut().unwrap().next();
-        mesh.update(&self.device, &mut self.allocator, primitives)?;
+        mesh.update(&self.name, &self.device, &mut self.allocator, primitives)?;
 
         unsafe {
             self.device.cmd_bind_pipeline(
@@ -722,6 +730,7 @@ mod mesh {
 
             // Create a vertex buffer
             let (vertices, vertices_mem) = create_and_fill_buffer(
+                "egui_ash_renderer_vertex_buffer",
                 device,
                 allocator,
                 &vertices,
@@ -730,6 +739,7 @@ mod mesh {
 
             // Create an index buffer
             let (indices, indices_mem) = create_and_fill_buffer(
+                "egui_ash_renderer_index_buffer",
                 device,
                 allocator,
                 &indices,
@@ -748,6 +758,7 @@ mod mesh {
 
         pub fn update(
             &mut self,
+            name: &str,
             device: &Device,
             allocator: &mut Allocator,
             primitives: &[ClippedPrimitive],
@@ -758,8 +769,12 @@ mod mesh {
 
                 let vertex_count = vertices.len();
                 let size = vertex_count * size_of::<Vertex>();
-                let (vertices, vertices_mem) =
-                    allocator.create_buffer(device, size, vk::BufferUsageFlags::VERTEX_BUFFER)?;
+                let (vertices, vertices_mem) = allocator.create_buffer(
+                    name,
+                    device,
+                    size,
+                    vk::BufferUsageFlags::VERTEX_BUFFER,
+                )?;
 
                 self.vertex_count = vertex_count;
 
@@ -778,8 +793,12 @@ mod mesh {
 
                 let index_count = indices.len();
                 let size = index_count * size_of::<u32>();
-                let (indices, indices_mem) =
-                    allocator.create_buffer(device, size, vk::BufferUsageFlags::INDEX_BUFFER)?;
+                let (indices, indices_mem) = allocator.create_buffer(
+                    name,
+                    device,
+                    size,
+                    vk::BufferUsageFlags::INDEX_BUFFER,
+                )?;
 
                 self.index_count = index_count;
 

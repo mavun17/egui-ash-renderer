@@ -32,6 +32,7 @@ impl Allocate for Allocator {
 
     fn create_buffer(
         &mut self,
+        name: &str,
         device: &Device,
         size: usize,
         usage: vk::BufferUsageFlags,
@@ -47,7 +48,7 @@ impl Allocate for Allocator {
         let mut allocator = self.get_allocator()?;
 
         let allocation = allocator.allocate(&AllocationCreateDesc {
-            name: "",
+            name,
             requirements,
             location: MemoryLocation::CpuToGpu,
             linear: true,

@@ -309,6 +309,7 @@ mod buffer {
     use ash::vk;
 
     pub fn create_and_fill_buffer<T>(
+        name: &str,
         device: &Device,
         allocator: &mut Allocator,
         data: &[T],
@@ -318,7 +319,7 @@ mod buffer {
         T: Copy,
     {
         let size = std::mem::size_of_val(data);
-        let (buffer, mut memory) = allocator.create_buffer(device, size, usage)?;
+        let (buffer, mut memory) = allocator.create_buffer(name, device, size, usage)?;
         allocator.update_buffer(device, &mut memory, data)?;
         Ok((buffer, memory))
     }
@@ -341,7 +342,9 @@ mod texture {
     }
 
     impl Texture {
+        #[allow(clippy::too_many_arguments)]
         pub(crate) fn from_rgba8(
+            name: &str,
             device: &Device,
             queue: vk::Queue,
             command_pool: vk::CommandPool,
@@ -352,7 +355,7 @@ mod texture {
         ) -> RendererResult<Self> {
             let (texture, staging_buff, staging_mem) =
                 execute_one_time_commands(device, queue, command_pool, |buffer| {
-                    Self::cmd_from_rgba(device, allocator, buffer, width, height, data)
+                    Self::cmd_from_rgba(name, device, allocator, buffer, width, height, data)
                 })??;
 
             allocator.destroy_buffer(device, staging_buff, staging_mem)?;
@@ -361,6 +364,7 @@ mod texture {
         }
 
         fn cmd_from_rgba(
+            name: &str,
             device: &Device,
             allocator: &mut Allocator,
             command_buffer: vk::CommandBuffer,
@@ -419,13 +423,15 @@ mod texture {
                 ..Default::default()
             };
             let (staging_buffer, staging_buffer_mem) =
-                texture.cmd_update(device, command_buffer, allocator, region, data)?;
+                texture.cmd_update(name, device, command_buffer, allocator, region, data)?;
 
             Ok((texture, staging_buffer, staging_buffer_mem))
         }
 
+        #[allow(clippy::too_many_arguments)]
         pub(crate) fn update(
             &mut self,
+            name: &str,
             device: &Device,
             queue: vk::Queue,
             command_pool: vk::CommandPool,
@@ -435,7 +441,7 @@ mod texture {
         ) -> RendererResult<()> {
             let (staging_buff, staging_mem) =
                 execute_one_time_commands(device, queue, command_pool, |buffer| {
-                    self.cmd_update(device, buffer, allocator, region, data)
+                    self.cmd_update(name, device, buffer, allocator, region, data)
                 })??;
 
             allocator.destroy_buffer(device, staging_buff, staging_mem)?;
@@ -445,6 +451,7 @@ mod texture {
 
         fn cmd_update(
             &mut self,
+            name: &str,
             device: &Device,
             command_buffer: vk::CommandBuffer,
             allocator: &mut Allocator,
@@ -452,6 +459,7 @@ mod texture {
             data: &[u8],
         ) -> RendererResult<(vk::Buffer, Memory)> {
             let (buffer, buffer_mem) = create_and_fill_buffer(
+                name,
                 device,
                 allocator,
                 data,

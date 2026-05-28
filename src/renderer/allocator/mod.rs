@@ -32,6 +32,7 @@ pub trait Allocate {
     /// * `usage` - The buffer usage flags.
     fn create_buffer(
         &mut self,
+        name: &str,
         device: &Device,
         size: usize,
         usage: vk::BufferUsageFlags,
